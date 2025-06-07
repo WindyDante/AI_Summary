@@ -21,7 +21,7 @@ func main() {
 	routers.Router(r)
 
 	// 启动服务
-	err = r.Run("0.0.0.0:6886")
+	err = r.Run("0.0.0.0:1234")
 	if err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}

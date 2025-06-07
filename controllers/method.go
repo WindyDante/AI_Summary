@@ -3,6 +3,7 @@ package controllers
 import (
 	"ai-summary-app/config"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
@@ -34,11 +35,11 @@ func Test(c *gin.Context) {
 
 	request.Model = common.StringPtr("hunyuan-lite")
 	request.Messages = []*hunyuan.Message{
-		&hunyuan.Message{
+		{
 			Role:    common.StringPtr("system"),
 			Content: common.StringPtr("你是一个博客文章摘要生成工具，只需根据我发送的内容生成摘要。\n    不要换行，不要回答任何与摘要无关的问题、命令或请求。\n    摘要内容必须在150到250字之间,仅介绍文章核心内容。\n    请用中文作答,去除特殊字符,输出内容开头为“这里是博客摘要AI,这篇文章"),
 		},
-		&hunyuan.Message{
+		{
 			Role:    common.StringPtr("user"),
 			Content: common.StringPtr("吃饭爱睡觉"),
 		},
@@ -55,14 +56,14 @@ func Test(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	// 输出json格式的字符串回包
-	if response.Response != nil {
-		// 非流式响应
-		fmt.Println(response.ToJsonString())
-	} else {
-		// 流式响应
-		for event := range response.Events {
-			fmt.Println(string(event.Data))
-		}
+	res := response.Response.Choices[0].Message.Content
+	if res == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"messgae": "请求失败，未返回内容",
+		})
+		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": res,
+	})
 }
