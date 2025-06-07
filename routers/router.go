@@ -10,7 +10,8 @@ import (
 func Router(r *gin.Engine) {
 	// 配置路由cors
 	r.Use(Cors())
-	r.GET("/test", controllers.Test)
+	r.Group("/api/v1")
+	r.POST("/summary", controllers.Summary)
 }
 
 func Cors() gin.HandlerFunc {
