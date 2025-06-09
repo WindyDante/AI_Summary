@@ -2,8 +2,8 @@ package controller
 
 import (
 	"ai-summary-app/config"
-	"ai-summary-app/model"
-	"ai-summary-app/vo"
+	"ai-summary-app/internal/model"
+	"ai-summary-app/internal/vo"
 	"fmt"
 	"net/http"
 	"unicode/utf8"

@@ -2,7 +2,7 @@ package main
 
 import (
 	"ai-summary-app/config"
-	"ai-summary-app/router"
+	"ai-summary-app/internal/router"
 	"log"
 
 	"github.com/gin-gonic/gin"

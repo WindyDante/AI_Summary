@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  ai-summary:
+    build: .
+    container_name: ai-summary-api
+    environment:
+      # 可以在此处设置环境变量
+      - SecretId=${SECRET_ID:-}
+      - SecretKey=${SECRET_KEY:-}
+    env_file:
+      # 从 .env 文件读取环境变量（如果存在）
+      - .env
+    ports:
+      - "6123:1234"  # 宿主机端口:容器端口
+    working_dir: /app
+    restart: unless-stopped
+    # 可选：如果用户想手动传入环境变量，可以这样启动：
+    # docker-compose run -e SecretId=xxx -e SecretKey=yyy ai-summary

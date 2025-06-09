@@ -1,6 +1,6 @@
 package vo
 
-import "ai-summary-app/model"
+import "ai-summary-app/internal/model"
 
 type Result[T any] struct {
 	Code    int    `json:"code"`
