@@ -2,7 +2,7 @@ package main
 
 import (
 	"ai-summary-app/config"
-	"ai-summary-app/routers"
+	"ai-summary-app/router"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +18,7 @@ func main() {
 
 	// 配置路由
 	r := gin.Default()
-	routers.Router(r)
+	router.Router(r)
 
 	// 启动服务
 	err = r.Run("0.0.0.0:1234")

@@ -1,9 +1,12 @@
-package controllers
+package controller
 
 import (
 	"ai-summary-app/config"
+	"ai-summary-app/model"
+	"ai-summary-app/vo"
 	"fmt"
 	"net/http"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
@@ -13,7 +16,20 @@ import (
 )
 
 func Summary(c *gin.Context) {
-	summaryContent := "吃饭爱睡觉"
+
+	var summaryBody struct {
+		Content string `json:"content" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&summaryBody); err != nil {
+		c.JSON(http.StatusBadRequest, vo.Fail[string](model.RequestBodyValidMessage))
+		return
+	}
+
+	summaryContent := summaryBody.Content
+
+	if utf8.RuneCountInString(summaryContent) > 18000 {
+		c.JSON(http.StatusBadRequest, vo.Fail[string](model.ContentMaxMessage))
+	}
 
 	// 密钥可前往官网控制台 https://console.cloud.tencent.com/cam/capi 进行获取
 	credential := common.NewCredential(
@@ -53,12 +69,8 @@ func Summary(c *gin.Context) {
 	}
 	res := response.Response.Choices[0].Message.Content
 	if res == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"messgae": "请求失败，未返回内容",
-		})
+		c.JSON(http.StatusInternalServerError, vo.Fail[string](model.NotContentMessage))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": res,
-	})
+	c.JSON(http.StatusOK, vo.OK(res))
 }

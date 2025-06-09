@@ -1,7 +1,7 @@
-package routers
+package router
 
 import (
-	"ai-summary-app/controllers"
+	"ai-summary-app/controller"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +11,7 @@ func Router(r *gin.Engine) {
 	// 配置路由cors
 	r.Use(Cors())
 	r.Group("/api/v1")
-	r.POST("/summary", controllers.Summary)
+	r.POST("/summary", controller.Summary)
 }
 
 func Cors() gin.HandlerFunc {
