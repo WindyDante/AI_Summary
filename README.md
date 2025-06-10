@@ -158,12 +158,15 @@ A：把上面命令中的 `localhost:6123` 改成你的服务器地址就行，�
 ```html
 <script 
     src="http://localhost:6123/static/widget.js"
-    data-selector="#my-article"
-    data-target="summary-box"
+    data-selector="#content1"
+    data-target="summary1"
     data-backend-prefix="http://localhost:6123"
-    data-theme="dark"
-    data-badge-text="我的AI助手"
-    data-show-stats="true">
+    data-theme="light"
+    data-show-stats="true"
+    data-show-theme-toggle="true"
+    data-show-header="true"
+    data-show-footer="true"
+    data-badge-text="东风学习摘要">
 </script>
 ```
 
@@ -171,6 +174,21 @@ A：把上面命令中的 `localhost:6123` 改成你的服务器地址就行，�
 - `data-theme`：主题颜色（`light` 亮色 / `dark` 暗色 / `auto` 自动）
 - `data-badge-text`：显示的标签文字（比如"智能摘要"、"AI助手"等）
 - `data-show-stats`：是否显示统计信息（`true` 显示 / `false` 不显示）
+- `data-show-theme-toggle`：是否显示主题切换按钮（`true` 显示 / `false` 不显示）
+- `data-show-header`：是否显示组件头部（`true` 显示 / `false` 不显示）
+- `data-show-footer`：是否显示组件底部（`true` 显示 / `false` 不显示）
+
+**简单例子：**
+```html
+<!-- 暗色主题，自定义标签 -->
+<script src="..." data-theme="dark" data-badge-text="我的AI助手">
+
+<!-- 极简模式，只显示摘要内容 -->
+<script src="..." data-show-header="false" data-show-footer="false">
+
+<!-- 完整功能模式 -->
+<script src="..." data-show-stats="true" data-show-theme-toggle="true">
+```
 
 ## 📂 项目文件说明（给好奇的人看）
 
