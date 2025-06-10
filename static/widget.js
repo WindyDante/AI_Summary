@@ -2,31 +2,112 @@
     // 在脚本执行时立即保存 currentScript 引用
     const currentScript = document.currentScript;
     
-    // 自动加载资源文件
-    function loadResources() {
+    // 直接内嵌模板定义，避免额外的 HTTP 请求
+    const AISummaryTemplates = {
+        // 头部模板
+        header: (showThemeToggle) => `
+            <div class="ai-summary-window-controls">
+                <div class="ai-summary-control close"></div>
+                <div class="ai-summary-control minimize"></div>
+                <div class="ai-summary-control maximize"></div>
+            </div>
+            ${showThemeToggle ? `
+            <button class="ai-summary-theme-toggle">
+                <span class="ai-summary-theme-icon">🌙</span>
+                <span class="ai-summary-theme-text">Dark Mode</span>
+            </button>
+            ` : ''}
+        `,
+
+        // 加载状态模板
+        loading: () => `
+            <div class="ai-summary-text">
+                <div class="ai-summary-loading">
+                    <div class="ai-summary-loading-animation"></div>
+                    <span>😏 AI 正在分析内容，生成摘要中...</span>
+                </div>
+            </div>
+        `,
+
+        // 成功结果模板
+        success: (data, stats, showStats, typewriterId, badgeText) => `
+            <div class="ai-summary-badge">
+                ${badgeText || 'AI-Powered Summary'}
+            </div>
+            <div class="ai-summary-text">
+                <p class="ai-summary-typewriter" id="${typewriterId}">
+                    ${data}
+                </p>
+            </div>
+        `,
+
+        // 错误状态模板
+        error: (errorMessage) => `
+            <div class="ai-summary-badge error">
+                <span>❌</span>
+                <span>摘要生成失败</span>
+            </div>
+            <div class="ai-summary-error">
+                <span>❌</span>
+                <span>摘要加载失败：${errorMessage}</span>
+            </div>
+        `,
+
+        // 底部模板
+        footer: () => `
+            <a href="#" class="ai-summary-source">AI Summary Engine</a>
+            <div class="ai-summary-model-info">loading...</div>
+        `,
+
+        // 完整组件结构模板
+        container: (headerId, contentId, footerId) => `
+            <div class="ai-summary-widget-container">
+                ${headerId ? `<div class="ai-summary-widget-header" id="${headerId}"></div>` : ''}
+                <div class="ai-summary-content" id="${contentId}"></div>
+                ${footerId ? `<div class="ai-summary-footer" id="${footerId}"></div>` : ''}
+            </div>
+        `
+    };
+    
+    // 自动加载资源文件 - 只加载 CSS
+    function loadResources(backendPrefix) {
         // 加载 CSS 样式
         if (!document.getElementById('ai-summary-widget-styles')) {
-            const scriptSrc = currentScript ? currentScript.src : '';
-            const cssPath = scriptSrc.replace('widget.js', 'widget.css');
-            const cssUrl = cssPath.includes('widget.js') ? cssPath : './static/widget.css';
+            let cssUrl;
+            if (backendPrefix) {
+                // 优先使用后端服务器的CSS路径
+                cssUrl = `${backendPrefix}/static/widget.css`;
+            } else {
+                // 回退到脚本同目录
+                const scriptSrc = currentScript ? currentScript.src : '';
+                if (scriptSrc) {
+                    const basePath = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
+                    cssUrl = `${basePath}/widget.css`;
+                } else {
+                    cssUrl = './static/widget.css';
+                }
+            }
             
             const link = document.createElement('link');
             link.id = 'ai-summary-widget-styles';
             link.rel = 'stylesheet';
             link.type = 'text/css';
             link.href = cssUrl;
+            // 添加错误处理
+            link.onerror = function() {
+                console.error('AI 摘要组件：无法加载样式文件:', cssUrl);
+                // 如果CSS加载失败，组件依然可以工作，只是没有样式
+                console.warn('AI 摘要组件：将以无样式模式运行');
+            };
+            link.onload = function() {
+                console.log('AI 摘要组件：样式文件加载成功');
+            };
             document.head.appendChild(link);
         }
         
-        // 加载模板文件
+        // 直接设置模板到全局变量
         if (!window.AISummaryTemplates) {
-            const scriptSrc = currentScript ? currentScript.src : '';
-            const templatesPath = scriptSrc.replace('widget.js', 'template.js');
-            const templatesUrl = templatesPath.includes('widget.js') ? templatesPath : './static/template.js';
-            
-            const script = document.createElement('script');
-            script.src = templatesUrl;
-            document.head.appendChild(script);
+            window.AISummaryTemplates = AISummaryTemplates;
         }
     }
     
@@ -61,24 +142,11 @@
         };
     }
     
-    // 等待模板加载完成
+    // 等待模板加载完成 - 简化逻辑
     function waitForTemplates(callback) {
-        if (window.AISummaryTemplates) {
-            callback();
-        } else {
-            setTimeout(() => waitForTemplates(callback), 100);
-        }
+        // 由于模板已经内嵌，直接执行回调
+        callback();
     }
-    
-    document.addEventListener("DOMContentLoaded", () => {
-        // 加载资源文件
-        loadResources();
-        
-        // 等待模板加载后初始化组件
-        waitForTemplates(() => {
-            initializeWidget();
-        });
-    });
     
     // 动画控制工具函数
     function addBadgeAnimation(badge, animationType, duration = 600) {
@@ -158,18 +226,56 @@
     }
 
     function initializeWidget() {
-        // 如果 currentScript 不可用，尝试通过其他方式获取脚本元素
+        // 更健壮的脚本查找逻辑
         let script = currentScript;
         
+        console.log('开始查找脚本元素...', { currentScript });
+        
         if (!script) {
-            const scripts = document.querySelectorAll('script[src*="widget.js"]');
-            script = scripts[scripts.length - 1];
+            // 方法1：查找包含widget.js的脚本
+            const scripts1 = document.querySelectorAll('script[src*="widget.js"]');
+            script = scripts1[scripts1.length - 1];
+            console.log('方法1 - 查找widget.js脚本:', scripts1.length, script);
         }
         
         if (!script) {
-            console.error("AI 摘要组件：无法找到脚本元素");
-            return;
+            // 方法2：查找包含data-selector属性的脚本
+            const scripts2 = document.querySelectorAll('script[data-selector]');
+            script = scripts2[scripts2.length - 1];
+            console.log('方法2 - 查找data-selector脚本:', scripts2.length, script);
         }
+        
+        if (!script) {
+            // 方法3：查找包含data-backend-prefix属性的脚本
+            const scripts3 = document.querySelectorAll('script[data-backend-prefix]');
+            script = scripts3[scripts3.length - 1];
+            console.log('方法3 - 查找data-backend-prefix脚本:', scripts3.length, script);
+        }
+        
+        if (!script) {
+            // 方法4：查找所有外部脚本，取最后一个有相关属性的
+            const scripts4 = document.querySelectorAll('script[src]');
+            for (let i = scripts4.length - 1; i >= 0; i--) {
+                if (scripts4[i].src && (
+                    scripts4[i].hasAttribute('data-selector') || 
+                    scripts4[i].hasAttribute('data-backend-prefix') ||
+                    scripts4[i].src.includes('widget')
+                )) {
+                    script = scripts4[i];
+                    console.log('方法4 - 找到匹配脚本:', script);
+                    break;
+                }
+            }
+        }
+        
+        if (!script) {
+            console.error("AI 摘要组件：无法找到脚本元素。请确保脚本标签包含必要的属性。");
+            console.error("示例用法：<script src='widget.js' data-selector='.content' data-backend-prefix='http://localhost:6123'></script>");
+            console.error("当前页面所有脚本:", document.querySelectorAll('script'));
+            return false;
+        }
+        
+        console.log('成功找到脚本元素:', script);
         
         // 获取配置参数
         const selector = script.getAttribute("data-selector");
@@ -183,22 +289,27 @@
         const showFooter = script.getAttribute("data-show-footer") !== "false";
         const badgeText = script.getAttribute("data-badge-text") || "AI-Powered Summary";
         
+        console.log('组件配置:', { selector, targetId, backend_prefix, theme });
+        
         // 验证必需参数
         if (!selector) {
             console.warn("AI 摘要组件：未设置 data-selector 属性。");
-            return;
+            return false;
         }
         
         if (!backend_prefix) { 
             console.warn("AI 摘要组件：未设置后端url，请检查 data-backend-prefix 属性。");
-            return;
+            return false;
         }
         
         // 检查是否已存在组件
         if (document.getElementById("ai-summary-widget")) {
             console.warn("AI 摘要组件：页面中已存在摘要组件。");
-            return;
+            return false;
         }
+        
+        // 加载CSS资源，使用backend_prefix
+        loadResources(backend_prefix);
         
         const sourceContentEl = document.querySelector(selector);
         const mountEl = targetId ? document.getElementById(targetId) : null;
@@ -343,16 +454,135 @@
             if (currentBadge) {
                 addBadgeAnimation(currentBadge, 'error', 800);
                 
-                // 在错误动画中更改文字
+                // 在错误动画中更改文字 - 显示具体错误信息
                 setTimeout(() => {
-                    changeBadgeText(currentBadge, '<span>❌</span><span>摘要生成失败</span>', false);
+                    changeBadgeText(currentBadge, '<span>❌</span><span>生成失败</span>', false);
                 }, 400);
             }
             
-            // 延迟显示错误内容
+            // 延迟显示错误内容 - 显示具体的错误消息
             setTimeout(() => {
                 widgetContentEl.innerHTML = window.AISummaryTemplates.error(err.message || err);
             }, 600);
         });
+        
+        return true;
     }
+    
+    // 改进的初始化逻辑
+    let initAttempts = 0;
+    const maxAttempts = 3;
+    let isInitializing = false;
+    
+    function tryInitialize() {
+        // 防止重复初始化
+        if (isInitializing) {
+            console.log('AI摘要组件：已在初始化中，跳过重复调用');
+            return;
+        }
+        
+        // 检查是否已存在组件
+        if (document.getElementById("ai-summary-widget")) {
+            console.log('AI摘要组件：组件已存在，跳过初始化');
+            return;
+        }
+        
+        // 检查重试次数
+        if (initAttempts >= maxAttempts) {
+            console.error('AI摘要组件：达到最大重试次数，停止初始化');
+            return;
+        }
+        
+        isInitializing = true;
+        initAttempts++;
+        
+        try {
+            console.log(`AI摘要组件：开始初始化... (第${initAttempts}次尝试)`, {
+                readyState: document.readyState,
+                currentScript: currentScript
+            });
+            
+            const result = initializeWidget();
+            if (result) {
+                console.log('AI摘要组件：初始化成功');
+                isInitializing = false;
+                return; // 成功后不再重试
+            } else {
+                console.warn(`AI摘要组件：第${initAttempts}次初始化失败`);
+                isInitializing = false;
+                
+                // 只有在未达到最大重试次数时才重试
+                if (initAttempts < maxAttempts) {
+                    console.log(`AI摘要组件：将在1秒后进行第${initAttempts + 1}次重试`);
+                    setTimeout(tryInitialize, 1000);
+                } else {
+                    console.error('AI摘要组件：所有重试均失败，请检查配置');
+                }
+            }
+        } catch (error) {
+            console.error(`AI 摘要组件第${initAttempts}次初始化失败：`, error);
+            isInitializing = false;
+            
+            // 只有在未达到最大重试次数时才重试
+            if (initAttempts < maxAttempts) {
+                console.log(`AI摘要组件：将在2秒后进行第${initAttempts + 1}次重试`);
+                setTimeout(tryInitialize, 2000);
+            } else {
+                console.error('AI摘要组件：所有重试均失败，请检查页面配置');
+            }
+        }
+    }
+    
+    // 多重初始化策略
+    if (document.readyState === 'loading') {
+        // 如果文档还在加载，等待DOMContentLoaded
+        console.log('AI摘要组件：等待DOM加载完成...');
+        document.addEventListener("DOMContentLoaded", tryInitialize);
+    } else {
+        // 如果文档已经加载完成，立即初始化
+        console.log('AI摘要组件：DOM已加载，立即初始化...');
+        // 使用setTimeout确保脚本执行完成
+        setTimeout(tryInitialize, 0);
+    }
+    
+    // 提供手动初始化的全局方法
+    window.initAISummaryWidget = function() {
+        console.log('手动初始化 AI 摘要组件');
+        // 重置重试计数器
+        initAttempts = 0;
+        isInitializing = false;
+        tryInitialize();
+    };
+    
+    // 暴露重新初始化方法（用于调试）
+    window.reinitAISummaryWidget = function() {
+        console.log('重新初始化 AI 摘要组件');
+        // 重置状态
+        initAttempts = 0;
+        isInitializing = false;
+        
+        // 移除现有组件
+        const existingWidget = document.getElementById("ai-summary-widget");
+        if (existingWidget) {
+            existingWidget.remove();
+            console.log('已移除现有组件');
+        }
+        
+        // 重新初始化
+        setTimeout(tryInitialize, 100);
+    };
+    
+    // 暴露调试信息方法
+    window.debugAISummaryWidget = function() {
+        console.log('=== AI摘要组件调试信息 ===');
+        console.log('document.currentScript:', document.currentScript);
+        console.log('currentScript (保存的):', currentScript);
+        console.log('document.readyState:', document.readyState);
+        console.log('所有script标签:', document.querySelectorAll('script'));
+        console.log('包含widget.js的script:', document.querySelectorAll('script[src*="widget.js"]'));
+        console.log('包含data-selector的script:', document.querySelectorAll('script[data-selector]'));
+        console.log('包含data-backend-prefix的script:', document.querySelectorAll('script[data-backend-prefix]'));
+        console.log('现有组件:', document.getElementById("ai-summary-widget"));
+        console.log('=== 调试信息结束 ===');
+    };
 })();

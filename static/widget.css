@@ -1,5 +1,6 @@
 /* AI Summary Widget - Enhanced Styles */
-:root {
+/* 将CSS变量限制在组件作用域内 */
+.ai-summary-widget {
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
     --text-primary: #1e293b;
@@ -8,14 +9,29 @@
     --border-color: #e2e8f0;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
-}
-
-.ai-summary-widget {
+    
+    /* 基础样式设置，避免继承外部样式 */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     max-width: 800px;
     margin: 2rem auto;
     transition: var(--transition);
     animation: ai-summary-fadeIn 0.5s ease-in-out;
+    box-sizing: border-box;
+    
+    /* 重置可能被外部样式影响的属性 */
+    position: relative;
+    z-index: 1000;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    text-align: left;
+    direction: ltr;
+    
+    /* 确保所有子元素使用border-box */
+    *, *::before, *::after {
+        box-sizing: border-box;
+        font-family: inherit;
+    }
 }
 
 @keyframes ai-summary-fadeIn {

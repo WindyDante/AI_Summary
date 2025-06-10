@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 摘要组件 - 融合版测试</title>
 </head>
+
 <body style="background: #f8fafc; padding: 2rem 1rem; margin: 0;">
     <div style="max-width: 1200px; margin: 0 auto;">
         <h1 style="text-align: center; color: #1e293b; margin-bottom: 3rem;">AI 摘要组件测试页面</h1>
-        
+
         <!-- 完整功能版本 -->
         <section style="margin-bottom: 4rem;">
             <h2 style="color: #3b82f6; margin-bottom: 1rem;">完整功能版本</h2>
-            <article id="content1" style="background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <article id="content1"
+                style="background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                 <h3 style="color: #1e293b; margin-bottom: 1rem;">机器学习基础指南</h3>
                 <p style="line-height: 1.6; color: #64748b; margin-bottom: 1rem;">
                     这是一个关于机器学习的综合指南，涵盖了监督学习和无监督学习算法的核心概念。我们深入探讨神经网络、深度学习架构以及现代AI系统中的实际应用。本文提供了在真实场景中实现机器学习解决方案的实践示例和最佳实践。
@@ -23,7 +26,7 @@
             </article>
             <div id="summary1"></div>
         </section>
-        
+
         <!-- AI摘要组件完整功能版本配置 -->
         <!-- 
             配置参数说明：
@@ -38,19 +41,12 @@
             - data-show-footer: 是否显示组件底部 (true/false)
             - data-badge-text: 自定义椭圆徽章显示文字
         -->
-        <script 
-            src="http://localhost:6123/static/widget.js"
-            data-selector="#content1"
-            data-target="summary1"
-            data-backend-prefix="http://localhost:6123"
-            data-theme="light"
-            data-show-stats="true"
-            data-show-theme-toggle="true"
-            data-show-header="true"
-            data-show-footer="true"
-            data-badge-text="东风学习摘要">
-        </script>
-    
-  
+        <script src="http://localhost:6123/static/widget.js" data-selector="#content1" data-target="summary1"
+            data-backend-prefix="http://localhost:6123" data-theme="light" data-show-stats="true"
+            data-show-theme-toggle="true" data-show-header="true" data-show-footer="true" data-badge-text="东风学习摘要">
+            </script>
+
+
 </body>
+
 </html>
