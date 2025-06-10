@@ -80,6 +80,83 @@
         });
     });
     
+    // 动画控制工具函数
+    function addBadgeAnimation(badge, animationType, duration = 600) {
+        if (!badge) return;
+        
+        // 移除之前的动画类
+        badge.classList.remove('loading', 'success', 'error', 'text-changing', 'width-changing');
+        
+        // 添加新动画类
+        badge.classList.add(animationType);
+        
+        // 动画完成后移除类
+        setTimeout(() => {
+            badge.classList.remove(animationType);
+        }, duration);
+    }
+    
+    // 文字内容变换动画
+    function animateTextChange(textElement, newContent, callback) {
+        if (!textElement) return;
+        
+        // 添加变换动画
+        textElement.classList.add('content-changing');
+        
+        setTimeout(() => {
+            textElement.textContent = newContent;
+            textElement.classList.remove('content-changing');
+            if (callback) callback();
+        }, 300);
+    }
+    
+    // 增强的打字机效果
+    function enhancedTypewriter(element, text, speed = 30, onComplete) {
+        if (!element) return;
+        
+        element.classList.add('typing');
+        element.innerHTML = '';
+        
+        let currentIndex = 0;
+        const chars = text.split('');
+        
+        function typeChar() {
+            if (currentIndex < chars.length) {
+                const char = chars[currentIndex];
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char;
+                span.style.animationDelay = `${currentIndex * 0.02}s`;
+                element.appendChild(span);
+                
+                currentIndex++;
+                setTimeout(typeChar, speed);
+            } else {
+                // 打字完成
+                element.classList.remove('typing');
+                element.classList.add('typing-complete');
+                if (onComplete) onComplete();
+            }
+        }
+        
+        // 开始打字
+        setTimeout(typeChar, 200);
+    }
+    
+    // 徽章文字变换
+    function changeBadgeText(badge, newText, showAnimation = true) {
+        if (!badge) return;
+        
+        if (showAnimation) {
+            addBadgeAnimation(badge, 'text-changing', 800);
+            setTimeout(() => {
+                badge.innerHTML = newText;
+            }, 300);
+        } else {
+            badge.innerHTML = newText;
+        }
+    }
+
     function initializeWidget() {
         // 如果 currentScript 不可用，尝试通过其他方式获取脚本元素
         let script = currentScript;
@@ -104,7 +181,7 @@
         const showThemeToggle = script.getAttribute("data-show-theme-toggle") !== "false";
         const showHeader = script.getAttribute("data-show-header") !== "false";
         const showFooter = script.getAttribute("data-show-footer") !== "false";
-        const badgeText = script.getAttribute("data-badge-text") || "AI-Powered Summary"; // 新增：从script标签读取椭圆框文字
+        const badgeText = script.getAttribute("data-badge-text") || "AI-Powered Summary";
         
         // 验证必需参数
         if (!selector) {
@@ -224,7 +301,7 @@
             const stats = calculateStats(contentText);
             const typewriterId = `ai-summary-typewriter-${Date.now()}`;
             
-            // 使用模板显示成功结果
+            // 直接显示成功结果，不添加成功动画
             widgetContentEl.innerHTML = window.AISummaryTemplates.success(
                 '', // 先显示空内容
                 stats, 
@@ -233,37 +310,33 @@
                 badgeText
             );
             
-            // 实现真正的打字效果
+            // 实现增强的打字效果
             const typewriterElement = container.querySelector(`#${typewriterId}`);
             if (typewriterElement) {
-                const text = data.data;
-                typewriterElement.classList.add('typing');
-                
-                let currentIndex = 0;
-                const typingSpeed = 30; // 减少打字速度，让效果更流畅
-                
-                function typeText() {
-                    if (currentIndex < text.length) {
-                        typewriterElement.textContent = text.substring(0, currentIndex + 1);
-                        currentIndex++;
-                        setTimeout(typeText, typingSpeed);
-                    } else {
-                        // 打字完成，移除光标和打字状态
-                        typewriterElement.classList.remove('typing');
-                        typewriterElement.classList.add('typing-complete');
-                    }
-                }
-                
-                // 开始打字前清空内容
-                typewriterElement.textContent = '';
-                // 延迟开始打字
-                setTimeout(typeText, 300);
+                enhancedTypewriter(typewriterElement, data.data, 25, () => {
+                    // 打字完成后的回调
+                    console.log('摘要显示完成');
+                });
             }
         })
         .catch(err => {
             console.error('AI 摘要组件错误：', err);
-            // 使用模板显示错误信息
-            widgetContentEl.innerHTML = window.AISummaryTemplates.error(err.message || err);
+            
+            // 获取当前的徽章元素并添加错误动画
+            const currentBadge = container.querySelector('.ai-summary-badge');
+            if (currentBadge) {
+                addBadgeAnimation(currentBadge, 'error', 800);
+                
+                // 在错误动画中更改文字
+                setTimeout(() => {
+                    changeBadgeText(currentBadge, '<span>❌</span><span>摘要生成失败</span>', false);
+                }, 400);
+            }
+            
+            // 延迟显示错误内容
+            setTimeout(() => {
+                widgetContentEl.innerHTML = window.AISummaryTemplates.error(err.message || err);
+            }, 600);
         });
     }
 })();

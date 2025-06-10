@@ -89,7 +89,7 @@
 }
 
 .ai-summary-content {
-    padding: 2rem 1.5rem;
+    padding: 0.75rem 1.5rem; /* 从 2rem 减少到 1.25rem */
 }
 
 .ai-summary-badge {
@@ -102,16 +102,231 @@
     border-radius: 20px;
     font-size: 0.875rem;
     font-weight: 600;
-    margin-bottom: 1.5rem;
-    animation: ai-summary-pulse 2s infinite;
-    min-width: 140px; /* 确保最小宽度 */
-    justify-content: center; /* 内容居中 */
-    height: 32px; /* 固定高度 */
+    margin-bottom: 0.5rem; /* 从 1.5rem 减少到 0.75rem */
+    justify-content: center;
+    height: 32px;
+    /* 优化的变换动画 */
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                background 0.4s ease-in-out;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    /* 初始出现动画和脉冲动画 */
+    animation: ai-summary-badge-appear 0.8s ease-out, 
+               ai-summary-pulse 3s infinite 1s;
+    /* 添加宽度自适应的最小值 */
+    min-width: fit-content;
+    white-space: nowrap;
 }
 
+/* 悬停效果 - 更流畅的变换 */
+.ai-summary-badge:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    filter: brightness(1.1);
+}
+
+/* 优化的出现动画 */
+@keyframes ai-summary-badge-appear {
+    0% {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.7);
+        filter: blur(2px);
+    }
+    30% {
+        opacity: 0.6;
+        transform: translateY(-5px) scale(1.15);
+        filter: blur(1px);
+    }
+    70% {
+        opacity: 0.9;
+        transform: translateY(2px) scale(0.95);
+        filter: blur(0px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+    }
+}
+
+/* 加载状态 - 增强动画效果 */
+.ai-summary-badge.loading {
+    animation: ai-summary-badge-loading 2s ease-in-out infinite;
+    background: linear-gradient(90deg, var(--accent-color), #8b5cf6, #06b6d4, var(--accent-color));
+    background-size: 300% 100%;
+    position: relative;
+}
+
+.ai-summary-badge.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: ai-summary-badge-shimmer 1.5s infinite;
+}
+
+@keyframes ai-summary-badge-loading {
+    0%, 100% {
+        background-position: 0% 50%;
+        transform: scale(1);
+    }
+    25% {
+        background-position: 50% 50%;
+        transform: scale(1.03);
+    }
+    50% {
+        background-position: 100% 50%;
+        transform: scale(1.05);
+    }
+    75% {
+        background-position: 50% 50%;
+        transform: scale(1.03);
+    }
+}
+
+@keyframes ai-summary-badge-shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* 文字内容变换动画 */
+.ai-summary-badge.text-changing {
+    animation: ai-summary-badge-text-morph 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes ai-summary-badge-text-morph {
+    0% { 
+        transform: scaleX(1) scaleY(1);
+        filter: blur(0px);
+    }
+    25% { 
+        transform: scaleX(0.8) scaleY(1.2);
+        filter: blur(1px);
+    }
+    50% { 
+        transform: scaleX(1.1) scaleY(0.9);
+        filter: blur(2px);
+    }
+    75% { 
+        transform: scaleX(0.95) scaleY(1.05);
+        filter: blur(1px);
+    }
+    100% { 
+        transform: scaleX(1) scaleY(1);
+        filter: blur(0px);
+    }
+}
+
+/* 宽度变换动画 */
+.ai-summary-badge.width-changing {
+    animation: ai-summary-badge-width-morph 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes ai-summary-badge-width-morph {
+    0% { 
+        transform: scaleX(1);
+        opacity: 1;
+    }
+    30% { 
+        transform: scaleX(0.85);
+        opacity: 0.8;
+    }
+    60% { 
+        transform: scaleX(1.1);
+        opacity: 0.9;
+    }
+    100% { 
+        transform: scaleX(1);
+        opacity: 1;
+    }
+}
+
+/* 成功状态 - 更丰富的动画 */
+.ai-summary-badge.success {
+    animation: ai-summary-badge-success 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes ai-summary-badge-success {
+    0% {
+        background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+        transform: scale(1) rotate(0deg);
+    }
+    20% {
+        background: linear-gradient(135deg, #10b981, #059669);
+        transform: scale(1.15) rotate(2deg);
+    }
+    40% {
+        background: linear-gradient(135deg, #10b981, #059669);
+        transform: scale(1.25) rotate(-1deg);
+        box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+    }
+    60% {
+        background: linear-gradient(135deg, #10b981, #059669);
+        transform: scale(1.1) rotate(1deg);
+    }
+    80% {
+        background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+        transform: scale(1.05) rotate(0deg);
+    }
+    100% {
+        background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+        transform: scale(1) rotate(0deg);
+        box-shadow: none;
+    }
+}
+
+/* 错误状态 - 增强震动效果 */
+.ai-summary-badge.error {
+    animation: ai-summary-badge-error 0.8s ease-out;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+@keyframes ai-summary-badge-error {
+    0%, 100% { 
+        transform: translateX(0) rotate(0deg); 
+    }
+    10% { 
+        transform: translateX(-4px) rotate(-1deg); 
+    }
+    20% { 
+        transform: translateX(4px) rotate(1deg); 
+    }
+    30% { 
+        transform: translateX(-3px) rotate(-0.5deg); 
+    }
+    40% { 
+        transform: translateX(3px) rotate(0.5deg); 
+    }
+    50% { 
+        transform: translateX(-2px) rotate(-0.3deg); 
+    }
+    60% { 
+        transform: translateX(2px) rotate(0.3deg); 
+    }
+    70% { 
+        transform: translateX(-1px) rotate(-0.1deg); 
+    }
+    80% { 
+        transform: translateX(1px) rotate(0.1deg); 
+    }
+}
+
+/* 脉冲动画优化 */
 @keyframes ai-summary-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.85; 
+        transform: scale(1.02);
+    }
 }
 
 .ai-summary-title {
@@ -122,38 +337,143 @@
 }
 
 .ai-summary-text {
-    font-size: 1.125rem; /* 从 1rem 增加到 1.125rem */
+    font-size: 1.125rem;
     line-height: 1.8;
     color: var(--text-secondary);
-    margin-bottom: 0; /* 移除底部间距 */
-    /* 移除 min-height: 120px; 让高度自适应内容 */
+    margin-bottom: 0;
+    /* 添加文字容器的变换动画 */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
 .ai-summary-typewriter {
-    /* 完全移除所有光标样式 */
     border-right: none;
-    white-space: normal; /* 允许自动换行 */
+    white-space: normal;
     word-wrap: break-word;
     word-break: break-word;
     line-height: 1.8;
-    overflow: visible; /* 允许内容显示 */
+    overflow: visible;
+    /* 优化打字机效果的动画 */
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-/* 打字过程中也不显示任何光标 */
+/* 优化打字过程中的效果 */
 .ai-summary-typewriter.typing {
-    /* 移除所有边框和光标 */
     border-right: none;
+    /* 添加打字时的微妙动画 */
+    animation: ai-summary-text-breathing 2s ease-in-out infinite;
 }
 
-/* 打字完成后确保没有光标 */
+/* 打字时的呼吸效果 */
+@keyframes ai-summary-text-breathing {
+    0%, 100% { 
+        opacity: 1; 
+        transform: translateY(0px);
+    }
+    50% { 
+        opacity: 0.95; 
+        transform: translateY(-1px);
+    }
+}
+
+/* 打字完成后的效果 */
 .ai-summary-typewriter.typing-complete {
     border-right: none;
+    /* 完成时的淡入效果 */
+    animation: ai-summary-text-complete 0.8s ease-out forwards;
 }
 
-/* 保留闪烁动画定义，但不使用 */
-@keyframes ai-summary-blink-caret {
-    from, to { border-color: transparent; }
-    50% { border-color: var(--accent-color); }
+@keyframes ai-summary-text-complete {
+    0% {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+
+/* 文字加载时的动画效果 */
+.ai-summary-text.loading {
+    position: relative;
+}
+
+.ai-summary-text.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent 25%, 
+        rgba(var(--accent-color-rgb, 59, 130, 246), 0.1) 50%, 
+        transparent 75%);
+    animation: ai-summary-text-shimmer 2s infinite;
+    pointer-events: none;
+}
+
+@keyframes ai-summary-text-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* 文字内容变化时的动画 */
+.ai-summary-text.content-changing {
+    animation: ai-summary-text-morph 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ai-summary-text-morph {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+    }
+    25% {
+        opacity: 0.7;
+        transform: translateY(-5px) scale(0.98);
+        filter: blur(1px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(-3px) scale(1.02);
+        filter: blur(2px);
+    }
+    75% {
+        opacity: 0.8;
+        transform: translateY(2px) scale(0.99);
+        filter: blur(1px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+    }
+}
+
+/* 文字逐字显示动画增强 */
+.ai-summary-typewriter .char {
+    display: inline;
+    opacity: 0;
+    animation: ai-summary-char-appear 0.1s ease-out forwards;
+}
+
+@keyframes ai-summary-char-appear {
+    0% {
+        opacity: 0;
+        transform: translateY(10px) scale(0.8);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateY(-2px) scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .ai-summary-footer {
@@ -256,7 +576,7 @@
     align-items: center;
     gap: 12px;
     color: var(--text-secondary);
-    padding: 2rem;
+    padding: 1rem; /* 从 2rem 减少到 1rem */
     justify-content: center;
 }
 
@@ -265,7 +585,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 2rem;
+    padding: 1rem; /* 从 2rem 减少到 1rem */
     justify-content: center;
 }
 

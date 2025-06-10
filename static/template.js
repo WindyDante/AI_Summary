@@ -17,11 +17,6 @@ window.AISummaryTemplates = {
 
     // 加载状态模板
     loading: () => `
-        <div class="ai-summary-badge">
-            <div class="ai-summary-loading-animation"></div>
-            AI-Powered Summary
-        </div>
-        <h2 class="ai-summary-title">正在分析内容...</h2>
         <div class="ai-summary-text">
             <div class="ai-summary-loading">
                 <div class="ai-summary-loading-animation"></div>
@@ -44,6 +39,10 @@ window.AISummaryTemplates = {
 
     // 错误状态模板
     error: (errorMessage) => `
+        <div class="ai-summary-badge error">
+            <span>❌</span>
+            <span>摘要生成失败</span>
+        </div>
         <div class="ai-summary-error">
             <span>❌</span>
             <span>摘要加载失败：${errorMessage}</span>
