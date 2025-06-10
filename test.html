@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 摘要组件测试</title>
+</head>
+<body>
+    <h1>AI 摘要组件测试页面</h1>
+    
+    <!-- 测试内容 -->
+    <article id="test-content">
+        <h2>测试文章标题</h2>
+        <p>这是一段测试内容。人工智能技术正在快速发展,深度学习、机器学习等技术在各个领域都有广泛应用。从自然语言处理到计算机视觉,从推荐系统到自动驾驶,AI技术正在改变我们的生活方式。</p>
+        <p>随着技术的不断进步,我们需要关注AI技术的伦理问题,确保技术发展能够造福人类社会。同时,教育体系也需要适应这种变化,培养具备AI素养的人才。</p>
+    </article>
+    
+    <!-- 摘要显示区域 -->
+    <div id="summary-container"></div>
+    
+    <!-- 引入组件脚本 -->
+    <script 
+        src="./static/widget.js"
+        data-selector="#test-content"
+        data-target="summary-container"
+        data-backend-prefix="https://summary.1wind.cn">
+    </script>
+</body>
+</html>
