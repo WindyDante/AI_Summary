@@ -7,3 +7,8 @@ const (
 	NotContentMessage       = "无响应内容"
 	ContentMaxMessage       = "内容过长,请控制在18000个字符以内"
 )
+
+// 模型
+const (
+	ModelHunyuanLite = "hunyuan-lite" // 腾讯混元Lite模型
+)

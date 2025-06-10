@@ -52,7 +52,7 @@ window.AISummaryTemplates = {
     // 底部模板
     footer: () => `
         <a href="#" class="ai-summary-source">AI Summary Engine</a>
-        <div class="ai-summary-model-info">GPT-4-Turbo</div>
+        <div class="ai-summary-model-info">loading...</div>
     `,
 
     // 完整组件结构模板

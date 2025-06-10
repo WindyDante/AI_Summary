@@ -20,6 +20,7 @@ func Summary(c *gin.Context) {
 	var summaryBody struct {
 		Content string `json:"content" binding:"required"`
 	}
+
 	if err := c.ShouldBindJSON(&summaryBody); err != nil {
 		c.JSON(http.StatusBadRequest, vo.Fail[string](model.RequestBodyValidMessage))
 		return
@@ -29,6 +30,7 @@ func Summary(c *gin.Context) {
 
 	if utf8.RuneCountInString(summaryContent) > 18000 {
 		c.JSON(http.StatusBadRequest, vo.Fail[string](model.ContentMaxMessage))
+		return
 	}
 
 	// 密钥可前往官网控制台 https://console.cloud.tencent.com/cam/capi 进行获取
@@ -62,15 +64,37 @@ func Summary(c *gin.Context) {
 	response, err := client.ChatCompletions(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		fmt.Printf("An API error has returned: %s", err)
+		c.JSON(http.StatusInternalServerError, vo.Fail[string]("AI服务调用失败"))
 		return
 	}
 	if err != nil {
-		panic(err)
+		fmt.Printf("Request error: %s", err)
+		c.JSON(http.StatusInternalServerError, vo.Fail[string]("请求处理失败"))
+		return
 	}
-	res := response.Response.Choices[0].Message.Content
-	if res == nil {
+
+	// 检查响应是否为空
+	if response == nil || response.Response == nil || len(response.Response.Choices) == 0 {
+		c.JSON(http.StatusInternalServerError, vo.Fail[string]("AI服务返回数据异常"))
+		return
+	}
+
+	// 检查消息内容是否存在
+	if response.Response.Choices[0].Message == nil || response.Response.Choices[0].Message.Content == nil {
+		c.JSON(http.StatusInternalServerError, vo.Fail[string]("AI服务返回内容为空"))
+		return
+	}
+
+	res := *response.Response.Choices[0].Message.Content
+	if res == "" {
 		c.JSON(http.StatusInternalServerError, vo.Fail[string](model.NotContentMessage))
 		return
 	}
-	c.JSON(http.StatusOK, vo.OK(res))
+	var resultBody struct {
+		Summary string `json:"summary"`
+		Model   string `json:"model"`
+	}
+	resultBody.Summary = res
+	resultBody.Model = model.ModelHunyuanLite
+	c.JSON(http.StatusOK, vo.OK(resultBody))
 }

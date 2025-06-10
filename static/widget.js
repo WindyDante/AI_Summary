@@ -280,6 +280,11 @@
             if (!res.ok) {
                 throw new Error(`HTTP ${res.status}: ${res.statusText}`);
             }
+            // 检查响应内容类型
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('服务器返回非JSON格式数据');
+            }
             return res.json();
         })
         .then(data => {
@@ -293,7 +298,7 @@
                 throw new Error(data.msg || '服务器返回错误');
             }
             
-            if (!data.data) {
+            if (!data.data || !data.data.summary) {
                 throw new Error('摘要内容为空');
             }
             
@@ -310,10 +315,21 @@
                 badgeText
             );
             
-            // 实现增强的打字效果
+            // 更新页脚显示模型信息
+            if (showFooter && data.data.model) {
+                const footerEl = container.querySelector(`#${footerId}`);
+                if (footerEl) {
+                    const modelInfo = footerEl.querySelector('.ai-summary-model-info');
+                    if (modelInfo) {
+                        modelInfo.textContent = data.data.model;
+                    }
+                }
+            }
+            
+            // 实现增强的打字效果，使用 data.data.summary
             const typewriterElement = container.querySelector(`#${typewriterId}`);
             if (typewriterElement) {
-                enhancedTypewriter(typewriterElement, data.data, 25, () => {
+                enhancedTypewriter(typewriterElement, data.data.summary, 25, () => {
                     // 打字完成后的回调
                     console.log('摘要显示完成');
                 });

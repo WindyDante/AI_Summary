@@ -12,7 +12,7 @@ func Router(r *gin.Engine) {
 	r.Use(Cors())
 	group := r.Group("/api/v1")
 	group.POST("/summary", controller.Summary)
-	group.Static("/static", "./static")
+	r.Static("/static", "./static")
 }
 
 func Cors() gin.HandlerFunc {

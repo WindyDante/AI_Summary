@@ -17,6 +17,8 @@ RUN go mod download
 COPY cmd ./cmd/
 COPY internal ./internal/
 COPY config ./config/
+# 添加静态文件目录
+COPY static ./static/
 
 # 构建 Go 后端应用
 RUN go build -o /app/summary ./cmd/server
@@ -35,6 +37,8 @@ RUN apk add --no-cache ca-certificates tzdata
 # 复制构建阶段的文件
 COPY --from=backend-build /app/config /app/config
 COPY --from=backend-build /app/summary /app/summary
+# 复制静态文件目录到运行时镜像
+COPY --from=backend-build /app/static /app/static
 
 # 复制 .env 文件（如果存在的话，作为备选）
 COPY .env* ./
