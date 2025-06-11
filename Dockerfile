@@ -43,9 +43,6 @@ COPY --from=backend-build /app/static /app/static
 # 复制 .env 文件（如果存在的话，作为备选）
 COPY .env* ./
 
-# 创建数据目录
-RUN mkdir -p /app/data && chmod -R 777 /app/data
-
 # 暴露端口
 EXPOSE 1234
 
