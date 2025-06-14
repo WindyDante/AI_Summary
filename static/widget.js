@@ -389,12 +389,14 @@
         })
         .then(res => {
             if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-            }
-            // 检查响应内容类型
-            const contentType = res.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('服务器返回非JSON格式数据');
+                const contentType = res.headers.get('Content-Type');
+                if (contentType && contentType.includes('application/json')) {
+                    return res.json().then(data => {
+                        throw new Error(data.msg || '服务器错误');
+                    });
+                } else {
+                    throw new Error('服务器返回非JSON格式数据');
+                }
             }
             return res.json();
         })
